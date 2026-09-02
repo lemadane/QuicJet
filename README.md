@@ -60,7 +60,7 @@ Our test suite covers SPI discovery, server lifecycle, HTTP/3 request/response s
 
 | Test Class | Module | Target Covered | Verification Method |
 | :--- | :--- | :--- | :--- |
-| `JettyProviderSpiTest` | `:quicjet-provider` | `ServiceLoader` SPI provider resolution | Verifies `QuicProviderLoader.loadProvider()` resolves `JettyQuicProvider` |
+| `JettyProviderSpiTest` | `:quicjet-provider` | `ServiceLoader` SPI provider resolution | Verifies `QuicProviderLoader.load()` resolves `JettyQuicProvider` |
 | `Http3ServerClientIntegrationTest` | `:quicjet-server` | Server lifecycle & dynamic port binding | Starts/stops `Http3Server`, verifies ephemeral port binding (`port(0)`), tests route registration |
 | `Http3ClientServerE2ETest` | `:quicjet-server` | HTTP/3 spec modeling & Raw QUIC | Verifies `HttpRequest` / `Http3Request`, `Http3Response`, `HttpHeaderMap`, and raw `QuicServer`/`QuicClient` stream messaging |
 | `Http3NetworkIntegrationTest` | `:quicjet-server` | Network Socket E2E & Guardrails | Tests HTTP/3 requests over UDP sockets and `maxRequestBodySize` 413 error guardrails |
@@ -215,11 +215,11 @@ quicjet:
   virtual-threads: true
   max-request-body-size: 10485760 # 10 MB limit
   keystore:
-    path: classpath:keystore.p12
+        path: /opt/quicjet/certs/keystore.p12
     password: password
     key-password: password
   truststore:
-    path: classpath:truststore.p12
+        path: /opt/quicjet/certs/truststore.p12
     password: password
   client:
     connect-timeout: 5s
