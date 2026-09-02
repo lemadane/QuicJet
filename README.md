@@ -23,21 +23,21 @@ Designed for modern Java applications (Java 17+ baseline, with full Virtual Thre
 
 ```mermaid
 graph TD
-    App[Application / Spring Boot] --> API[QuicJet Public API (Java 17+)]
+    App["Application / Spring Boot"] --> API["QuicJet Public API (Java 17 and newer)"]
 
-    API --> H3Client[QuicHttpClient]
-    API --> H3Server[Http3Server]
-    API --> QuicClient[QuicClient]
-    API --> QuicServer[QuicServer]
+    API --> H3Client["QuicHttpClient"]
+    API --> H3Server["Http3Server"]
+    API --> QuicClient["QuicClient"]
+    API --> QuicServer["QuicServer"]
     
-    H3Client --> SPI[Provider SPI: QuicProvider]
+    H3Client --> SPI["Provider SPI: QuicProvider"]
     H3Server --> SPI
     QuicClient --> SPI
     QuicServer --> SPI
     
-    SPI --> Provider[QuicJet Jetty Provider]
-    Provider --> Quiche[Cloudflare Quiche]
-    Quiche --> UDP[UDP Socket / DatagramChannel]
+    SPI --> Provider["QuicJet Jetty Provider"]
+    Provider --> Quiche["Cloudflare Quiche"]
+    Quiche --> UDP["UDP Socket / DatagramChannel"]
 ```
 
 ---
@@ -239,7 +239,6 @@ import quicjet.client.HttpResponse;
 import quicjet.server.Http3Server;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
