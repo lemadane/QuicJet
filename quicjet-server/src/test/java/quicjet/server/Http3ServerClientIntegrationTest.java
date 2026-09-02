@@ -7,17 +7,29 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Http3ServerClientIntegrationTest {
     private Http3Server server;
+    private Path tempKeystore;
 
     @BeforeEach
     public void setup() throws Exception {
+        tempKeystore = Files.createTempFile("test-keystore", ".p12");
+        try (InputStream is = Http3ServerClientIntegrationTest.class.getResourceAsStream("/test-keystore.p12")) {
+            assertNotNull(is, "test-keystore.p12 must exist in test resources");
+            Files.copy(is, tempKeystore, StandardCopyOption.REPLACE_EXISTING);
+        }
+
         server = Http3Server.builder()
                 .port(0)
+                .keyStore(tempKeystore, "password")
                 .virtualThreads(true)
                 .route("GET", "/hello", req -> Http3Response.ok("Hello Java 21 HTTP/3!"))
                 .route("POST", "/echo", req -> Http3Response.ok("Echo: " + req.bodyAsString()))
@@ -30,6 +42,9 @@ public class Http3ServerClientIntegrationTest {
     public void tearDown() throws Exception {
         if (server != null) {
             server.stop();
+        }
+        if (tempKeystore != null) {
+            Files.deleteIfExists(tempKeystore);
         }
     }
 

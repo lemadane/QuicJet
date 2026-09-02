@@ -41,7 +41,7 @@ public class Http3Server implements AutoCloseable {
                     Http3Response res = handler.handle(req);
                     return res.toSpec();
                 } catch (Exception e) {
-                    return Http3Response.status(500).text("Internal Server Error: " + e.getMessage()).build().toSpec();
+                    return Http3Response.status(500).text("Internal Server Error").build().toSpec();
                 }
             });
         });
@@ -53,7 +53,7 @@ public class Http3Server implements AutoCloseable {
                     Http3Response res = builder.defaultHandler.handle(req);
                     return res.toSpec();
                 } catch (Exception e) {
-                    return Http3Response.status(500).text("Internal Server Error: " + e.getMessage()).build().toSpec();
+                    return Http3Response.status(500).text("Internal Server Error").build().toSpec();
                 }
             });
         }

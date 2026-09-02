@@ -28,6 +28,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyStore;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -60,33 +63,53 @@ public class JettyHttp3ServerTransport implements Http3ServerTransport {
 
 
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        if (config.keyStorePath() != null) {
-            sslContextFactory.setKeyStorePath(config.keyStorePath().toString());
-            if (config.keyStorePassword() != null) {
-                sslContextFactory.setKeyStorePassword(config.keyStorePassword());
+        if (config.keyStorePath() == null || config.keyStorePassword() == null || config.keyStorePassword().isBlank()) {
+            throw new Http3Exception("TLS keyStorePath and keyStorePassword are required for HTTP/3 server startup");
+        }
+
+        String keyStorePath = config.keyStorePath().toString();
+        String lowerKeyStorePath = keyStorePath.toLowerCase();
+        String keyStoreType = (lowerKeyStorePath.endsWith(".p12") || lowerKeyStorePath.endsWith(".pfx")) ? "PKCS12" : "JKS";
+
+        KeyStore keyStore;
+        try {
+            keyStore = KeyStore.getInstance(keyStoreType);
+            try (InputStream keyStoreInput = Files.newInputStream(config.keyStorePath())) {
+                keyStore.load(keyStoreInput, config.keyStorePassword().toCharArray());
             }
-            if (config.keyManagerPassword() != null) {
-                sslContextFactory.setKeyManagerPassword(config.keyManagerPassword());
-            }
+        } catch (Exception e) {
+            throw new Http3Exception("Failed to load TLS keystore", e);
+        }
+
+        sslContextFactory.setKeyStore(keyStore);
+        sslContextFactory.setKeyStoreType(keyStoreType);
+        sslContextFactory.setKeyStorePassword(config.keyStorePassword());
+        sslContextFactory.setKeyManagerPassword(
+            config.keyManagerPassword() != null ? config.keyManagerPassword() : config.keyStorePassword()
+        );
+        try {
+            sslContextFactory.start();
+        } catch (Exception e) {
+            throw new Http3Exception("Failed to initialize TLS context", e);
         }
 
         HttpConfiguration httpConfig = new HttpConfiguration();
         HTTP3ServerConnectionFactory http3Factory = new HTTP3ServerConnectionFactory(httpConfig);
 
-        DatagramServerConnector datagramConnector;
         try {
             QuicheServerQuicConfiguration quicConfig = new QuicheServerQuicConfiguration();
+            Path pemWorkDir = Path.of(System.getProperty("java.io.tmpdir"), "quicjet-quiche-pem");
+            Files.createDirectories(pemWorkDir);
+            quicConfig.setPemWorkDirectory(pemWorkDir);
             quicConfig.configure(sslContextFactory);
-            datagramConnector = new QuicheServerConnector(server, sslContextFactory, quicConfig, http3Factory);
+            this.connector = new QuicheServerConnector(server, sslContextFactory, quicConfig, http3Factory);
         } catch (Exception e) {
-            LOG.warn("Initializing DatagramServerConnector fallback due to TLS configuration exception: {}", e.getMessage());
-            datagramConnector = new DatagramServerConnector(server, http3Factory);
+            LOG.error("Failed to initialize HTTP/3 TLS/QUIC server configuration", e);
+            throw new Http3Exception("Failed to initialize HTTP/3 TLS/QUIC server configuration", e);
         }
 
-        datagramConnector.setHost(config.host());
-        datagramConnector.setPort(config.port());
-
-        this.connector = datagramConnector;
+        connector.setHost(config.host());
+        connector.setPort(config.port());
         this.server.addConnector(connector);
 
         this.server.setHandler(new Handler.Abstract() {
@@ -110,7 +133,7 @@ public class JettyHttp3ServerTransport implements Http3ServerTransport {
                 } catch (Http3Exception e) {
                     LOG.warn("Request body rejected for {} {}: {}", method, path, e.getMessage());
                     response.setStatus(413);
-                    response.write(true, BufferUtil.toBuffer("413 Payload Too Large: " + e.getMessage()), callback);
+                    response.write(true, BufferUtil.toBuffer("413 Payload Too Large"), callback);
                     return true;
                 }
 
@@ -126,7 +149,7 @@ public class JettyHttp3ServerTransport implements Http3ServerTransport {
                 } catch (Exception e) {
                     LOG.error("Unhandled exception handling {} {}", method, path, e);
                     response.setStatus(500);
-                    response.write(true, BufferUtil.toBuffer("500 Internal Server Error: " + e.getMessage()), callback);
+                    response.write(true, BufferUtil.toBuffer("500 Internal Server Error"), callback);
                     return true;
                 }
 
