@@ -1,0 +1,19 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':quicjet-core')
+
+    def jettyVersion = '12.1.12'
+    implementation "org.eclipse.jetty:jetty-client:${jettyVersion}"
+    implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
+    implementation "org.eclipse.jetty.http3:jetty-http3-client:${jettyVersion}"
+    implementation "org.eclipse.jetty.http3:jetty-http3-client-transport:${jettyVersion}"
+    implementation "org.eclipse.jetty.http3:jetty-http3-server:${jettyVersion}"
+    implementation "org.eclipse.jetty.quic:jetty-quic-client:${jettyVersion}"
+    implementation "org.eclipse.jetty.quic:jetty-quic-server:${jettyVersion}"
+    implementation "org.eclipse.jetty.quic:jetty-quic-quiche-server:${jettyVersion}"
+    implementation "org.eclipse.jetty.quic:jetty-quic-quiche-client:${jettyVersion}"
+    implementation "org.eclipse.jetty.quic:jetty-quic-quiche-foreign:${jettyVersion}"
+}

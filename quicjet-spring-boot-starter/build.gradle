@@ -1,0 +1,18 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':quicjet-client')
+    api project(':quicjet-server')
+    implementation project(':quicjet-provider')
+
+    def springBootVersion = project.hasProperty('springBootVersion') ? project.property('springBootVersion') : '3.5.0-M1'
+
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+
+}

@@ -1,0 +1,40 @@
+# Gradle
+.gradle/
+**/build/
+**/out/
+**/bin/
+.gradletaskdiskcache/
+gradle-app.setting
+
+# IDEs & Editors
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+.idea_modules/
+.classpath
+.project
+.settings/
+.factorypath
+.vscode/
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Logs, Temp & OS Files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+/tmp/
+
+# KeyStores & Credentials (with exception for test resources)
+*.p12
+*.jks
+*.keystore
+!**/src/test/resources/*.p12
+!**/src/test/resources/*.jks
+

@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':quicjet-core')
+    testImplementation project(':quicjet-client')
+    testImplementation project(':quicjet-provider')
+}

@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'quicjet'
+    version = '1.0.0'
+
+    repositories {
+
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
+
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+
+    dependencies {
+        def junitVersion = '5.10.2'
+        def slf4jVersion = '2.0.12'
+
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+        testRuntimeOnly "org.slf4j:slf4j-simple:${slf4jVersion}"
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.compilerArgs << '-parameters'
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        jvmArgs(
+            '-Xmx2g',
+            '--enable-native-access=ALL-UNNAMED',
+            '--add-opens=java.base/java.lang=ALL-UNNAMED'
+        )
+    }
+}
