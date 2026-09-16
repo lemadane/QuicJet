@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api project(':quicjet-core')
 
-    def jettyVersion = '12.1.12'
+    def jettyVersion = '12.1.13'
     implementation "org.eclipse.jetty:jetty-client:${jettyVersion}"
     implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
     implementation "org.eclipse.jetty.http3:jetty-http3-client:${jettyVersion}"
